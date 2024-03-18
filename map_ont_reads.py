@@ -105,6 +105,7 @@ def plot(seq_df):
         multiple="stack",
         binwidth=100)
     plt.xlim(0, 10000)
+    plt.title(f"Read length distribution - {prefix}")
     plt.savefig(f"tmp/{prefix}.hist.png", dpi=300)
     return
 
