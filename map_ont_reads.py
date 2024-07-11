@@ -7,6 +7,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import re
+import Levenshtein
 import subprocess
 from Bio import SeqIO
 from Bio.Seq import Seq
@@ -97,6 +98,35 @@ def read_data(reads_path):
     return df
 
 
+def lev_dist(seq_df):
+    bc_df = seq_df[~seq_df["barcode"].isna()].copy()
+    bcs = list(bc_df["barcode"])
+    min_dist = []
+    for i, bc in enumerate(bcs):
+        this_min = 20
+        for j, bc2 in enumerate(bcs):
+            if i == j:
+                continue
+            else:
+                k = Levenshtein.distance(bc, bc2)
+                if k < this_min:
+                    this_min = k
+        min_dist.append(this_min)
+    
+    bc_df["min_dist"] = min_dist
+    sns.histplot(
+        data = bc_df,
+        x="min_dist",
+        binwidth=1
+    )
+    total = bc_df.shape[0]
+    unique = bc_df["barcode"].nunique()
+    plt.title(f"minimum Levenshtein distance - {total} barcodes, {unique} unique")
+    plt.xlim(0,15)
+    plt.savefig(f"tmp/{prefix}.dist.hist.png", dpi=300)
+    return
+
+
 def plot(seq_df):
     sns.histplot(
         data=seq_df,
@@ -106,7 +136,7 @@ def plot(seq_df):
         binwidth=100)
     plt.xlim(0, 10000)
     plt.title(f"Read length distribution - {prefix}")
-    plt.savefig(f"tmp/{prefix}.hist.png", dpi=300)
+    plt.savefig(f"tmp/{prefix}.map.hist.png", dpi=300)
     return
 
 
@@ -121,8 +151,8 @@ def main():
         prefix = "output"
 
     minimap_and_samtools(reads_path, ref_path)
-
     seq_df = read_data(reads_path)
+    lev_dist(seq_df)
     plot(seq_df)
 
 
