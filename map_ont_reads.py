@@ -30,6 +30,11 @@ def parse_args():
         type=str,
         help="prefix for output files"
     )
+    parser.add_argument(
+        '--barcode',
+        action="store_true",
+        help="use if input has a barcode region"
+    )
     return parser.parse_args()
 
 
@@ -152,7 +157,8 @@ def main():
 
     minimap_and_samtools(reads_path, ref_path)
     seq_df = read_data(reads_path)
-    lev_dist(seq_df)
+    if args.barcode:
+        lev_dist(seq_df)
     plot(seq_df)
 
 
