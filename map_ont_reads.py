@@ -43,12 +43,19 @@ def minimap_and_samtools(reads, ref):
     minimap2 \
         -a -x map-ont \
         --secondary=no \
-        -o tmp/{prefix}.sam \
+        -o tmp/{prefix}.all.sam \
         {ref} \
         {reads}
     """
     proc = subprocess.Popen(cmd.split())
     proc.wait()
+
+    cmd = f"""
+    samtools view -h -F 2048 -o tmp/{prefix}.sam tmp/{prefix}.all.sam
+    """
+    proc = subprocess.Popen(cmd.split())
+    proc.wait()
+
 
     cmd = f"""
     samtools view -Sb tmp/{prefix}.sam -o tmp/{prefix}.bam
